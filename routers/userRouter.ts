@@ -10,6 +10,9 @@ const {
   seeHalls,
   seePosts,
   updateAccount,
+  seeUserTypes,
+  seeEquipmentStates,
+  seeEquipmentTypes,
 } = require('../controllers/userController');
 
 router.post('/login', login);
@@ -18,6 +21,9 @@ router.post('/token', token);
 
 router.get('/halls', auth, seeHalls);
 router.get('/posts', auth, seePosts);
+router.get('/user_types', auth, seeUserTypes);
+router.get('/equipment_types', auth, seeEquipmentTypes);
+router.get('/equipment_states', auth, seeEquipmentStates);
 
 router.put('/update_account', auth, updateAccount);
 

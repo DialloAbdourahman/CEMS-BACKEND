@@ -257,4 +257,50 @@ const seePosts = async (req: Request, res: Response) => {
   }
 };
 
-module.exports = { login, logout, token, seeHalls, seePosts, updateAccount };
+const seeUserTypes = async (req: Request, res: Response) => {
+  try {
+    // Get all the user types from db.
+    const userTypes = await prisma.userType.findMany({});
+
+    // Send back a positive response with all the user types
+    return res.status(200).json(userTypes);
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
+const seeEquipmentTypes = async (req: Request, res: Response) => {
+  try {
+    // Get all the equipment types from db.
+    const equipmentTypes = await prisma.equipmentType.findMany({});
+
+    // Send back a positive response with all the equipment types
+    return res.status(200).json(equipmentTypes);
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
+const seeEquipmentStates = async (req: Request, res: Response) => {
+  try {
+    // Get all the equipment state from db.
+    const equipmentState = await prisma.state.findMany({});
+
+    // Send back a positive response with all the equipment states
+    return res.status(200).json(equipmentState);
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
+module.exports = {
+  login,
+  logout,
+  token,
+  seeHalls,
+  seePosts,
+  updateAccount,
+  seeUserTypes,
+  seeEquipmentStates,
+  seeEquipmentTypes,
+};
