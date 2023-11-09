@@ -151,6 +151,54 @@ const token = async (req: Request, res: Response) => {
   }
 };
 
+const updateAccount = async (req: Request, res: Response) => {
+  try {
+    // Get the enteries and create a valid enteries array
+    const enteries = Object.keys(req.body);
+
+    if (enteries.length < 1) {
+      return res.status(400).json({ message: 'Please provide data to us.' });
+    }
+    const allowedEntery = ['name', 'email', 'password', 'phoneNumber'];
+
+    // Check if the enteries are valid
+    const isValidOperation = enteries.every((entery) => {
+      return allowedEntery.includes(entery);
+    });
+
+    // Send negative response if the enteries are not allowed.
+    if (!isValidOperation) {
+      res.status(400).send({
+        message: 'You are trying to update data you are not allowed to',
+      });
+      return;
+    }
+
+    // Check if the password should be updated and then encrypt it.
+    const passwordUpdate = enteries.find((entery) => entery === 'password');
+    if (passwordUpdate) {
+      req.body.password = await bcrypt.hash(req.body.password, 8);
+    }
+
+    // Update the system admin's information.
+    await prisma.user.update({
+      where: {
+        id: req.user.id,
+      },
+      data: {
+        ...req.body,
+      },
+    });
+
+    // Send back a positive response
+    res
+      .status(200)
+      .json({ message: 'Your credentials have been updated successfully.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
 const seeHalls = async (req: Request, res: Response) => {
   try {
     // Get relevant data from request query
@@ -180,4 +228,33 @@ const seeHalls = async (req: Request, res: Response) => {
   }
 };
 
-module.exports = { login, logout, token, seeHalls };
+const seePosts = async (req: Request, res: Response) => {
+  try {
+    // Get relevant data from request query
+    let name: string = String(req.query.name);
+    let page: number = Number(req.query.page);
+
+    // Configure the pages. Here, the first page will be 1.
+    const itemPerPage = 10;
+    page = page - 1;
+
+    // Get all the posts from db.
+    const posts = await prisma.post.findMany({
+      take: itemPerPage,
+      skip: itemPerPage * page,
+      where: {
+        name: {
+          contains: name,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    // Send back a positive response with all the posts
+    return res.status(200).json(posts);
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
+module.exports = { login, logout, token, seeHalls, seePosts, updateAccount };
