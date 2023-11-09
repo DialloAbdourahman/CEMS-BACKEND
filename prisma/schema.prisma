@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String
+  phoneNumber String
+  userRole    String
+  userType    UserType @relation(fields: [type], references: [name])
+  type        String   @default("user")
+  token       String?
+}
+
+model UserType {
+  name        String  @id
+  description String?
+  users       User[]
+}
+
+model Equipment {
+  id             String        @id @default(uuid())
+  name           String?
+  description    String?
+  location       String
+  equipmentType  EquipmentType @relation(fields: [type], references: [name])
+  type           String
+  equipmentState State         @relation(fields: [state], references: [name])
+  state          String
+  relatedPost    Post?         @relation(fields: [post], references: [id])
+  post           String?
+  equipmentHall  Hall?         @relation(fields: [hall], references: [id])
+  hall           String?
+}
+
+model Post {
+  id          String      @id @default(uuid())
+  name        String?     @unique
+  description String?
+  postState   State       @relation(fields: [state], references: [name])
+  state       String
+  hallFoundIn Hall        @relation(fields: [hall], references: [id], onDelete: Cascade)
+  hall        String
+  equipments  Equipment[]
+}
+
+model EquipmentType {
+  name        String      @id
+  description String?
+  equipments  Equipment[]
+}
+
+model State {
+  name        String      @id
+  description String?
+  equipements Equipment[]
+  posts       Post[]
+}
+
+model Hall {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String?
+  posts       Post[]
+  equipments  Equipment[]
+}
+
+// npx prisma migrate dev --name init 
