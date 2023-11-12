@@ -200,7 +200,7 @@ const deletePost = async (req: Request, res: Response) => {
     // Get the id of the post
     const { id } = req.params;
 
-    // Update the hal's information.
+    // Delete the post.
     await prisma.post.delete({
       where: {
         id: id,
@@ -270,6 +270,111 @@ const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+const createEquipment = async (req: Request, res: Response) => {
+  try {
+    // Get data from request body
+    let { name, description, location, hall, state, type, post } = req.body;
+
+    // Check if all the information has been entered.
+    if (!location || !state || !type) {
+      return res.status(400).json({
+        message: 'Please provide atleast the location, state and type.',
+      });
+    }
+
+    // Create an equipment
+    await prisma.equipment.create({
+      data: {
+        name,
+        description,
+        location,
+        hall,
+        state,
+        type,
+        post,
+      },
+    });
+
+    // Send back positive response.
+    res.status(201).json({ message: 'Equipment created successfully.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
+const updateEquipment = async (req: Request, res: Response) => {
+  try {
+    // Get the id of the hall
+    const { id } = req.params;
+
+    // Get the enteries and create a valid enteries array
+    const enteries = Object.keys(req.body);
+    if (enteries.length < 1) {
+      return res.status(400).json({ message: 'Please provide data to us.' });
+    }
+    const allowedEntery = [
+      'name',
+      'description',
+      'state',
+      'hall',
+      'location',
+      'type',
+      'post',
+    ];
+
+    // Check if the enteries are valid
+    const isValidOperation = enteries.every((entery) => {
+      return allowedEntery.includes(entery);
+    });
+
+    // Send negative response if the enteries are not allowed.
+    if (!isValidOperation) {
+      res.status(400).send({
+        message: 'You are trying to update data you are not allowed to',
+      });
+      return;
+    }
+
+    // Update the equipment's information.
+    await prisma.equipment.update({
+      where: {
+        id: id,
+      },
+      data: {
+        ...req.body,
+      },
+    });
+
+    // Send back a positive response
+    res
+      .status(200)
+      .json({ message: 'Equipment has been updated successfully.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
+const deleteEquipment = async (req: Request, res: Response) => {
+  try {
+    // Get the id of the equipment
+    const { id } = req.params;
+
+    // Delete the equipment
+    await prisma.equipment.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    // Send back a positive response
+    res
+      .status(200)
+      .json({ message: 'Equipment has been deleted successfully.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
 module.exports = {
   createUser,
   createHall,
@@ -280,4 +385,7 @@ module.exports = {
   deletePost,
   searchUsers,
   deleteUser,
+  createEquipment,
+  updateEquipment,
+  deleteEquipment,
 };

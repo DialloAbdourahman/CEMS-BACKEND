@@ -293,6 +293,58 @@ const seeEquipmentStates = async (req: Request, res: Response) => {
   }
 };
 
+const searchEquipment = async (req: Request, res: Response) => {
+  try {
+    // Get relevant data from request query
+    let hall: string = String(req.query.hall);
+    let state: string = String(req.query.state);
+    let post: string = String(req.query.post);
+    let type: string = String(req.query.type);
+    let page: number = Number(req.query.page);
+
+    // Configure the pages. Here, the first page will be 1.
+    const itemPerPage = 10;
+    page = page - 1;
+
+    // Construct a search object
+    const searchFilter: any = {};
+    if (hall !== 'undefined') {
+      searchFilter.hall = hall;
+    }
+    if (post !== 'undefined') {
+      searchFilter.post = post;
+    }
+    if (state !== 'undefined') {
+      searchFilter.state = state;
+    }
+    if (type !== 'undefined') {
+      searchFilter.type = type;
+    }
+
+    // Get every equipment from db.
+    const equipment = await prisma.equipment.findMany({
+      take: itemPerPage,
+      skip: itemPerPage * page,
+      where: searchFilter,
+      select: {
+        id: true,
+        hall: true,
+        location: true,
+        post: true,
+        state: true,
+        type: true,
+        name: true,
+        description: true,
+      },
+    });
+
+    // Send back a positive response with every equipment
+    return res.status(200).json(equipment);
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong.', error });
+  }
+};
+
 module.exports = {
   login,
   logout,
@@ -303,4 +355,5 @@ module.exports = {
   seeUserTypes,
   seeEquipmentStates,
   seeEquipmentTypes,
+  searchEquipment,
 };
